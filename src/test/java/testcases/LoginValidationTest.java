@@ -2,6 +2,7 @@ package testcases;
 
 import org.openqa.selenium.By;
 import org.testng.Assert;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import utilities.TestUtils;
 
@@ -15,14 +16,40 @@ public class LoginValidationTest extends TestBase {
     
     private TestUtils testUtils;
     
-    @Override
-    public void Setup() throws Exception {
-        super.Setup();
+    @BeforeTest
+    public void initTest() throws Exception {
         testUtils = new TestUtils(driver, config, OR);
     }
     
     /**
-     * Test Case 1: Validate successful login with valid credentials
+     * Test Case 1: Verify login page is accessible
+     */
+    @Test(priority = 0, description = "Verify login page accessibility")
+    public void testLoginPageAccess() {
+        try {
+            System.out.println("========== Test: Login Page Access ==========");
+            
+            String pageTitle = testUtils.getPageTitle();
+            System.out.println("Page Title: " + pageTitle);
+            
+            String baseURL = config.getProperty("baseURL");
+            System.out.println("Base URL loaded: " + baseURL);
+            
+            // Verify login button is present
+            Assert.assertTrue(testUtils.waitForElement(OR.getProperty("Login"), 10),
+                    "Login button not found on page");
+            
+            System.out.println("Test PASSED: Login page is accessible!");
+            
+        } catch (Exception e) {
+            System.err.println("Test FAILED: " + e.getMessage());
+            e.printStackTrace();
+            Assert.fail("Login page access test failed: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Test Case 2: Validate successful login with valid credentials
      */
     @Test(priority = 1, description = "Verify login with valid credentials")
     public void testValidLogin() throws InterruptedException {
@@ -71,29 +98,35 @@ public class LoginValidationTest extends TestBase {
     }
     
     /**
-     * Test Case 2: Verify login page is accessible
+     * Test Case 3: Verify all login form fields exist
      */
-    @Test(priority = 0, description = "Verify login page accessibility")
-    public void testLoginPageAccess() {
+    @Test(priority = 2, description = "Verify login form fields")
+    public void testLoginFormFields() throws InterruptedException {
         try {
-            System.out.println("========== Test: Login Page Access ==========");
+            System.out.println("========== Test: Login Form Fields ==========");
             
-            String pageTitle = testUtils.getPageTitle();
-            System.out.println("Page Title: " + pageTitle);
+            // Click Login button
+            testUtils.clickElement(OR.getProperty("Login"));
+            Thread.sleep(1000);
             
-            String baseURL = config.getProperty("baseURL");
-            System.out.println("Base URL loaded: " + baseURL);
+            // Verify all form fields
+            boolean usernameExists = testUtils.isElementPresent(OR.getProperty("username"));
+            boolean passwordExists = testUtils.isElementPresent(OR.getProperty("password"));
+            boolean signinExists = testUtils.isElementPresent(OR.getProperty("signin"));
             
-            // Verify login button is present
-            Assert.assertTrue(testUtils.waitForElement(OR.getProperty("Login"), 10),
-                    "Login button not found on page");
+            System.out.println("Username field exists: " + usernameExists);
+            System.out.println("Password field exists: " + passwordExists);
+            System.out.println("SignIn button exists: " + signinExists);
             
-            System.out.println("Test PASSED: Login page is accessible!");
+            Assert.assertTrue(usernameExists && passwordExists && signinExists,
+                    "One or more login form fields not found");
+            
+            System.out.println("Test PASSED: All login form fields are present!");
             
         } catch (Exception e) {
             System.err.println("Test FAILED: " + e.getMessage());
             e.printStackTrace();
-            Assert.fail("Login page access test failed: " + e.getMessage());
+            Assert.fail("Login form fields test failed: " + e.getMessage());
         }
     }
 }
